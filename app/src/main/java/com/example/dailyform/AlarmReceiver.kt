@@ -6,15 +6,34 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.provider.Settings
 import androidx.core.app.NotificationCompat
 
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        showFullScreenNotification(context)
+        // If we have "Display over other apps", we're exempt from background
+        // activity-launch limits and can force the form straight to the
+        // foreground even while the phone is unlocked and in active use. That
+        // makes the notification redundant, so we only fall back to it when the
+        // overlay permission is missing (e.g. revoked in OEM settings).
+        if (canDrawOverlays(context)) {
+            val formIntent = Intent(context, FormActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            }
+            context.startActivity(formIntent)
+        } else {
+            showFullScreenNotification(context)
+        }
+
         // setAlarmClock only fires once, so re-arm for tomorrow every time.
         AlarmScheduler.scheduleDaily(context)
     }
+
+    private fun canDrawOverlays(context: Context): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(context)
 
     private fun showFullScreenNotification(context: Context) {
         val channelId = "daily_form_reminder"

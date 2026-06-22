@@ -5,6 +5,14 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- "Display over other apps". This grants a background-activity-launch
+         exemption so AlarmReceiver can start FormActivity directly even while
+         the phone is unlocked and in use. Without it, a full-screen intent is
+         demoted to a heads-up notification whenever the screen is unlocked. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Lets the app ask to be exempted from battery optimization so aggressive
+         OEM battery managers don't kill the daily alarm. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- Exact-alarm permissions. This is a reminder/alarm app, so USE_EXACT_ALARM
          (API 33+) is appropriate and is auto-granted with no user prompt.
          SCHEDULE_EXACT_ALARM covers API 31-32 (also auto-granted there).

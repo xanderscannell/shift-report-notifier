@@ -2,12 +2,14 @@ package com.example.dailyform
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.KeyguardManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
@@ -26,13 +28,15 @@ class FormActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Make the screen appear over the lock screen and wake the display.
+        // Draw this activity on top of the lock screen and wake the display.
+        // setShowWhenLocked is the key: it shows (and lets you interact with) the
+        // form over the keyguard WITHOUT unlocking. We deliberately do NOT call
+        // requestDismissKeyguard here — on a secure lock that forces a PIN/biometric
+        // prompt, which is exactly the unlock step we want to avoid.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         }
-        (getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager)
-            .requestDismissKeyguard(this, null)
 
         // Setup that used to live in MainActivity: make sure the daily alarm is
         // armed and we're allowed to post the notification that fires it.
@@ -69,6 +73,32 @@ class FormActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1
             )
+        }
+
+        // "Display over other apps" is what lets the alarm force the form to the
+        // foreground while the phone is unlocked. It can only be granted from a
+        // system Settings screen, so bounce the user there if it's missing.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+            )
+        }
+
+        // Ask to be exempted from battery optimization so OEM battery managers
+        // don't kill the daily alarm. One-time system prompt; no-op once granted.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                startActivity(
+                    Intent(
+                        Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                        Uri.parse("package:$packageName")
+                    )
+                )
+            }
         }
     }
 
