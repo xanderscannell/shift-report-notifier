@@ -6,9 +6,9 @@ import java.time.DayOfWeek
  * Per-user configuration TEMPLATE — these are now just the SEED DEFAULTS.
  *
  * Everything here can be edited in-app from the gear/Settings screen at
- * runtime (those edits are stored in SharedPreferences via Settings.kt and
- * take precedence). FormConfig only supplies the values a fresh install starts
- * with, so you can either fill them in here or leave the placeholders and set
+ * runtime (those edits are stored in SharedPreferences via Prefs.kt and take
+ * precedence). FormConfig only supplies the values a fresh install starts with,
+ * so you can either fill them in here or leave the placeholders and set
  * everything up in the app.
  *
  * SETUP: copy this file to FormConfig.kt (same folder) and optionally fill in

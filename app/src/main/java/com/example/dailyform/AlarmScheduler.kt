@@ -14,7 +14,7 @@ object AlarmScheduler {
     private const val TAG = "AlarmScheduler"
     private const val REQUEST_CODE = 1001
 
-    // Schedule (time + days) lives in FormConfig.
+    // Schedule (time + days) lives in Prefs (seeded from FormConfig).
 
     fun scheduleDaily(context: Context) {
         if (Prefs.reminderDays.isEmpty()) {

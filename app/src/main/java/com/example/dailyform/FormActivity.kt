@@ -19,9 +19,9 @@ class FormActivity : AppCompatActivity() {
     // prompts live in MainActivity, not here — bouncing the user to a Settings
     // screen while the form is up would be jarring.
     //
-    // All per-user settings (form ID, entry IDs, name, labels) live in
-    // FormConfig.kt, which is gitignored. Copy FormConfig.kt.example to
-    // FormConfig.kt and fill in your own values.
+    // All per-user settings (form ID, entry IDs, name, labels) are read from
+    // Prefs, which the user edits in SettingsActivity. Prefs falls back to the
+    // FormConfig.kt seed defaults until then.
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
