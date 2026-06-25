@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Daily Form</string>
+    <string name="settings">Settings</string>
     <color name="ic_launcher_background">#3B5BA5</color>
 </resources>

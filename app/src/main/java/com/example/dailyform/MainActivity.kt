@@ -16,6 +16,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -90,7 +91,7 @@ class MainActivity : AppCompatActivity() {
     private fun render() {
         content.removeAllViews()
 
-        content.addView(title(getString(R.string.app_name)))
+        content.addView(header())
         content.addView(spacer(8))
         content.addView(body(scheduleSummary()))
         content.addView(spacer(24))
@@ -112,16 +113,16 @@ class MainActivity : AppCompatActivity() {
     /** A line describing the next fire time and which days the alarm runs. */
     private fun scheduleSummary(): String {
         val time = LocalDateTime.now()
-            .withHour(FormConfig.REMINDER_HOUR)
-            .withMinute(FormConfig.REMINDER_MINUTE)
+            .withHour(Prefs.reminderHour)
+            .withMinute(Prefs.reminderMinute)
             .format(DateTimeFormatter.ofPattern("h:mm a"))
 
-        if (FormConfig.REMINDER_DAYS.isEmpty()) {
+        if (Prefs.reminderDays.isEmpty()) {
             return "No reminder days are configured, so the form will never " +
                 "fire automatically. Use \"Open form now\" below."
         }
 
-        val days = FormConfig.REMINDER_DAYS
+        val days = Prefs.reminderDays
             .sorted() // DayOfWeek sorts Monday-first
             .joinToString(", ") {
                 it.getDisplayName(TextStyle.SHORT, Locale.getDefault())
@@ -246,6 +247,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ===== Small view helpers =====
+
+    /** App title on the left, a gear that opens SettingsActivity on the right. */
+    private fun header(): View {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        row.addView(title(getString(R.string.app_name)).apply {
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        })
+        row.addView(ImageButton(this).apply {
+            setImageResource(android.R.drawable.ic_menu_preferences)
+            contentDescription = getString(R.string.settings)
+            // Borderless, transparent background so it reads as an icon button.
+            setBackgroundResource(android.R.color.transparent)
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
+            }
+        })
+        return row
+    }
 
     private fun title(text: String) = TextView(this).apply {
         this.text = text

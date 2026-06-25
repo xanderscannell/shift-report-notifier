@@ -62,22 +62,22 @@ class FormActivity : AppCompatActivity() {
         val time = now.format(DateTimeFormatter.ofPattern("HH:mm"))   // 24-hour HH:mm
 
         // Derive Morning/Afternoon/Evening from the current hour, using the
-        // thresholds and labels from FormConfig. Evening is the wrap-around
+        // thresholds and labels from Prefs. Evening is the wrap-around
         // bucket (everything outside the morning/afternoon windows).
         val partOfDay = when (now.hour) {
-            in FormConfig.MORNING_START_HOUR until FormConfig.AFTERNOON_START_HOUR ->
-                FormConfig.MORNING_LABEL
-            in FormConfig.AFTERNOON_START_HOUR until FormConfig.EVENING_START_HOUR ->
-                FormConfig.AFTERNOON_LABEL
-            else -> FormConfig.EVENING_LABEL
+            in Prefs.morningStartHour until Prefs.afternoonStartHour ->
+                Prefs.morningLabel
+            in Prefs.afternoonStartHour until Prefs.eveningStartHour ->
+                Prefs.afternoonLabel
+            else -> Prefs.eveningLabel
         }
 
-        return Uri.parse("https://docs.google.com/forms/d/e/${FormConfig.FORM_ID}/viewform")
+        return Uri.parse("https://docs.google.com/forms/d/e/${Prefs.formId}/viewform")
             .buildUpon()
-            .appendQueryParameter(FormConfig.DATE_ENTRY_ID, date)
-            .appendQueryParameter(FormConfig.TIME_ENTRY_ID, time)
-            .appendQueryParameter(FormConfig.NAME_ENTRY_ID, FormConfig.YOUR_NAME)
-            .appendQueryParameter(FormConfig.PART_OF_DAY_ENTRY_ID, partOfDay)
+            .appendQueryParameter(Prefs.dateEntryId, date)
+            .appendQueryParameter(Prefs.timeEntryId, time)
+            .appendQueryParameter(Prefs.nameEntryId, Prefs.yourName)
+            .appendQueryParameter(Prefs.partOfDayEntryId, partOfDay)
             .build()
             .toString()
     }

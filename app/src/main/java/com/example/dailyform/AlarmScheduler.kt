@@ -17,8 +17,8 @@ object AlarmScheduler {
     // Schedule (time + days) lives in FormConfig.
 
     fun scheduleDaily(context: Context) {
-        if (FormConfig.REMINDER_DAYS.isEmpty()) {
-            Log.w(TAG, "REMINDER_DAYS is empty; no reminder scheduled.")
+        if (Prefs.reminderDays.isEmpty()) {
+            Log.w(TAG, "No reminder days set; no reminder scheduled.")
             return
         }
 
@@ -67,18 +67,19 @@ object AlarmScheduler {
     /**
      * The next date/time the reminder will fire. Public so the home screen can
      * show "Next reminder: …" without duplicating the scheduling math. Callers
-     * MUST check REMINDER_DAYS is non-empty first — otherwise the loop below
-     * never finds an allowed day and spins forever.
+     * MUST check Prefs.reminderDays is non-empty first — otherwise the loop
+     * below never finds an allowed day and spins forever.
      */
     fun nextTriggerTime(): LocalDateTime {
         val now = LocalDateTime.now()
+        val days = Prefs.reminderDays
         var candidate = now.toLocalDate()
-            .atTime(FormConfig.REMINDER_HOUR, FormConfig.REMINDER_MINUTE)
+            .atTime(Prefs.reminderHour, Prefs.reminderMinute)
 
         // Advance a day at a time until the slot is both in the future and on
-        // an allowed day. Caller guarantees REMINDER_DAYS is non-empty, so this
+        // an allowed day. Caller guarantees reminderDays is non-empty, so this
         // terminates within at most 8 iterations.
-        while (!candidate.isAfter(now) || candidate.dayOfWeek !in FormConfig.REMINDER_DAYS) {
+        while (!candidate.isAfter(now) || candidate.dayOfWeek !in days) {
             candidate = candidate.plusDays(1)
         }
 
