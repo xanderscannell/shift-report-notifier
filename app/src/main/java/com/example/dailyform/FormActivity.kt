@@ -1,25 +1,24 @@
 package com.example.dailyform
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.pm.PackageManager
-import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
-import android.provider.Settings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class FormActivity : AppCompatActivity() {
 
+    // The form screen. Reached two ways: forced to the foreground by
+    // AlarmReceiver at reminder time, or opened on demand from MainActivity's
+    // "Open form now" button. Either way its only job is to show the prefilled
+    // form and close once it's submitted. Alarm scheduling and permission
+    // prompts live in MainActivity, not here — bouncing the user to a Settings
+    // screen while the form is up would be jarring.
+    //
     // All per-user settings (form ID, entry IDs, name, labels) live in
     // FormConfig.kt, which is gitignored. Copy FormConfig.kt.example to
     // FormConfig.kt and fill in your own values.
@@ -38,10 +37,6 @@ class FormActivity : AppCompatActivity() {
             setTurnScreenOn(true)
         }
 
-        // Setup that used to live in MainActivity: make sure the daily alarm is
-        // armed and we're allowed to post the notification that fires it.
-        ensureSetup()
-
         val webView = WebView(this)
         setContentView(webView)
 
@@ -59,47 +54,6 @@ class FormActivity : AppCompatActivity() {
         }
 
         webView.loadUrl(buildFormUrl())
-    }
-
-    private fun ensureSetup() {
-        AlarmScheduler.scheduleDaily(this)
-
-        // On Android 13+ we need POST_NOTIFICATIONS for the alarm's full-screen
-        // notification to show. Only prompts if it isn't already granted.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1
-            )
-        }
-
-        // "Display over other apps" is what lets the alarm force the form to the
-        // foreground while the phone is unlocked. It can only be granted from a
-        // system Settings screen, so bounce the user there if it's missing.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            startActivity(
-                Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-            )
-        }
-
-        // Ask to be exempted from battery optimization so OEM battery managers
-        // don't kill the daily alarm. One-time system prompt; no-op once granted.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                startActivity(
-                    Intent(
-                        Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                        Uri.parse("package:$packageName")
-                    )
-                )
-            }
-        }
     }
 
     private fun buildFormUrl(): String {

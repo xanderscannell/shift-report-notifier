@@ -28,21 +28,28 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.DayNight">
 
-        <!-- The form screen is the launcher: tapping the app icon opens the
-             form directly. excludeFromRecents + the lock-screen flags (also
-             set in code) make it behave like an alarm/call screen. -->
+        <!-- The home screen is the launcher: tapping the app icon opens the GUI
+             (status, schedule, permissions, "Open form now"), not the form. -->
         <activity
-            android:name=".FormActivity"
-            android:exported="true"
-            android:excludeFromRecents="true"
-            android:launchMode="singleTop"
-            android:showWhenLocked="true"
-            android:turnScreenOn="true">
+            android:name=".MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- The form screen. Launched by the alarm (forced to the foreground)
+             or on demand from MainActivity. excludeFromRecents + the lock-screen
+             flags (also set in code) make it behave like an alarm/call screen.
+             No LAUNCHER filter: it's never the app's entry point. -->
+        <activity
+            android:name=".FormActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
 
         <receiver
             android:name=".AlarmReceiver"

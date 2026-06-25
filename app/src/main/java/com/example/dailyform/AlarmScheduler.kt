@@ -23,7 +23,7 @@ object AlarmScheduler {
         }
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val triggerAt = nextTriggerTime()
+        val triggerAt = nextTriggerTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         // The "show" intent is what opens when the user taps the alarm icon
         // in the status bar. Point it at the form itself.
@@ -64,7 +64,13 @@ object AlarmScheduler {
         }
     }
 
-    private fun nextTriggerTime(): Long {
+    /**
+     * The next date/time the reminder will fire. Public so the home screen can
+     * show "Next reminder: …" without duplicating the scheduling math. Callers
+     * MUST check REMINDER_DAYS is non-empty first — otherwise the loop below
+     * never finds an allowed day and spins forever.
+     */
+    fun nextTriggerTime(): LocalDateTime {
         val now = LocalDateTime.now()
         var candidate = now.toLocalDate()
             .atTime(FormConfig.REMINDER_HOUR, FormConfig.REMINDER_MINUTE)
@@ -76,6 +82,6 @@ object AlarmScheduler {
             candidate = candidate.plusDays(1)
         }
 
-        return candidate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        return candidate
     }
 }
